@@ -31,6 +31,14 @@ jobs:
       run: |
         pyinstaller Firefox-Launch-GUI.spec
 
+    - name: List dist directory contents
+      run: |
+        ls -R dist
+
+    - name: List Firefox-Launch-GUI directory contents
+      run: |
+        ls -R dist/Firefox-Launch-GUI
+
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
