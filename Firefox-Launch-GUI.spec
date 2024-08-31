@@ -38,4 +38,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['app.ico'],
+    dest='dist/Firefox-Launch-GUI'
 )
