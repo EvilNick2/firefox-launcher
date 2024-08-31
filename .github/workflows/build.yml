@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Change to Windows runner
 
     steps:
     - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Change to Windows runner
     permissions:
       contents: write  # Ensure the token has write permissions for contents
     steps:
@@ -50,12 +50,12 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI.exe
+        path: dist
 
     - name: Get latest tag
       id: get_latest_tag
       run: |
-        if git describe --tags `git rev-list --tags --max-count=1` > /dev/null 2>&1; then
+        if git describe --tags `git rev-list --tags --max-count=1` > NUL 2>&1; then
           latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
         else
           latest_tag=""
@@ -97,6 +97,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/Firefox-Launch-GUI/Firefox-Launch-GUI.exe
+        asset_path: dist/Firefox-Launch-GUI.exe
         asset_name: Firefox-Launch-GUI.exe
         asset_content_type: application/octet-stream
