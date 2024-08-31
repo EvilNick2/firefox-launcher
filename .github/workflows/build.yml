@@ -57,7 +57,7 @@ jobs:
       run: |
         echo "Fetching the latest tag from GitHub..."
         latest_tag=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/EvilNick2/firefox-launcher/tags" | \
+          "https://api.github.com/repos/${{ github.repository }}/tags" | \
           jq -r '.[0].name')
         if [ -z "$latest_tag" ]; then
           latest_tag="v0.0.0"
