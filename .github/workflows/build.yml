@@ -57,13 +57,14 @@ jobs:
       run: |
         echo "Fetching the latest tag from GitHub..."
         latest_tag=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/tags" | \
+          "https://api.github.com/repos/EvilNick2/firefox-launcher/tags" | \
           jq -r '.[0].name')
         if [ -z "$latest_tag" ]; then
           latest_tag="v0.0.0"
         fi
         echo "Latest tag: $latest_tag"
         echo "latest_tag=$latest_tag" >> $GITHUB_ENV
+      shell: bash
 
     - name: Increment tag
       id: increment_tag
@@ -81,6 +82,7 @@ jobs:
         fi
         echo "New tag: $new_tag"
         echo "new_tag=$new_tag" >> $GITHUB_ENV
+      shell: bash
 
     - name: Create GitHub Release
       id: create_release
