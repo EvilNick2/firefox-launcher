@@ -56,30 +56,41 @@ jobs:
       id: get_latest_tag
       shell: pwsh
       run: |
-        $latest_tag = $(git describe --tags $(git rev-list --tags --max-count=1) 2>$null)
-        if (-not $latest_tag) {
-          $latest_tag = ""
+        try {
+          Write-Output "Fetching the latest tag..."
+          $latest_tag = $(git describe --tags $(git rev-list --tags --max-count=1) 2>$null)
+          if (-not $latest_tag) {
+            $latest_tag = ""
+          }
+          Write-Output "Latest tag: $latest_tag"
+          echo "latest_tag=$latest_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        } catch {
+          Write-Error "An error occurred while fetching the latest tag: $_"
+          exit 1
         }
-        Write-Output "Latest tag: $latest_tag"
-        echo "latest_tag=$latest_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
 
     - name: Increment tag
       id: increment_tag
       shell: pwsh
       run: |
-        $latest_tag = "${{ env.latest_tag }}"
-        if (-not $latest_tag) {
-          $new_tag = "v1.0.0"
-        } else {
-          $parts = $latest_tag.TrimStart('v').Split('.')
-          $major = [int]$parts[0]
-          $minor = [int]$parts[1]
-          $patch = [int]$parts[2]
-          $new_patch = $patch + 1
-          $new_tag = "v$major.$minor.$new_patch"
+        try {
+          $latest_tag = "${{ env.latest_tag }}"
+          if (-not $latest_tag) {
+            $new_tag = "v1.0.0"
+          } else {
+            $parts = $latest_tag.TrimStart('v').Split('.')
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2]
+            $new_patch = $patch + 1
+            $new_tag = "v$major.$minor.$new_patch"
+          }
+          Write-Output "New tag: $new_tag"
+          echo "new_tag=$new_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
+        } catch {
+          Write-Error "An error occurred while incrementing the tag: $_"
+          exit 1
         }
-        Write-Output "New tag: $new_tag"
-        echo "new_tag=$new_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
 
     - name: Create GitHub Release
       id: create_release
