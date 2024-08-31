@@ -61,13 +61,13 @@ jobs:
           $latest_tag = ""
         }
         Write-Output "Latest tag: $latest_tag"
-        echo "::set-output name=latest_tag::$latest_tag"
+        echo "latest_tag=$latest_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
 
     - name: Increment tag
       id: increment_tag
       shell: pwsh
       run: |
-        $latest_tag = "${{ steps.get_latest_tag.outputs.latest_tag }}"
+        $latest_tag = "${{ env.latest_tag }}"
         if (-not $latest_tag) {
           $new_tag = "v1.0.0"
         } else {
@@ -79,7 +79,7 @@ jobs:
           $new_tag = "v$major.$minor.$new_patch"
         }
         Write-Output "New tag: $new_tag"
-        echo "::set-output name=new_tag::$new_tag"
+        echo "new_tag=$new_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
 
     - name: Create GitHub Release
       id: create_release
@@ -87,8 +87,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.increment_tag.outputs.new_tag }}
-        release_name: Firefox Launch GUI ${{ steps.increment_tag.outputs.new_tag }}
+        tag_name: ${{ env.new_tag }}
+        release_name: Firefox Launch GUI ${{ env.new_tag }}
         draft: false
         prerelease: false
 
