@@ -52,37 +52,35 @@ jobs:
         name: firefox-launch-gui
         path: dist
 
-    - name: Get and increment latest tag
-      id: get_and_increment_tag
-      shell: pwsh
+    - name: Get latest tag from GitHub
+      id: get_latest_tag
       run: |
-        try {
-          Write-Output "Fetching the latest tag..."
-          $latest_tag = $(git describe --tags $(git rev-list --tags --max-count=1) 2>$null)
-          if (-not $latest_tag) {
-            $latest_tag = "v0.0.0"
-          }
-          Write-Output "Latest tag: $latest_tag"
+        echo "Fetching the latest tag from GitHub..."
+        latest_tag=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/tags" | \
+          jq -r '.[0].name')
+        if [ -z "$latest_tag" ]; then
+          latest_tag="v0.0.0"
+        fi
+        echo "Latest tag: $latest_tag"
+        echo "latest_tag=$latest_tag" >> $GITHUB_ENV
 
-          Write-Output "Incrementing the tag..."
-          if ($latest_tag -eq "v0.0.0") {
-            $new_tag = "v1.0.0"
-          } else {
-            $parts = $latest_tag.TrimStart('v').Split('.')
-            $major = [int]$parts[0]
-            $minor = [int]$parts[1]
-            $patch = [int]$parts[2]
-            $new_patch = $patch + 1
-            $new_tag = "v$major.$minor.$new_patch"
-          }
-          Write-Output "New tag: $new_tag"
-
-          echo "latest_tag=$latest_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
-          echo "new_tag=$new_tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8
-        } catch {
-          Write-Error "An error occurred: $_"
-          exit 1
-        }
+    - name: Increment tag
+      id: increment_tag
+      run: |
+        latest_tag=${{ env.latest_tag }}
+        if [ "$latest_tag" = "v0.0.0" ]; then
+          new_tag="v1.0.0"
+        else
+          IFS='.' read -r -a parts <<< "${latest_tag#v}"
+          major=${parts[0]}
+          minor=${parts[1]}
+          patch=${parts[2]}
+          new_patch=$((patch + 1))
+          new_tag="v$major.$minor.$new_patch"
+        fi
+        echo "New tag: $new_tag"
+        echo "new_tag=$new_tag" >> $GITHUB_ENV
 
     - name: Create GitHub Release
       id: create_release
