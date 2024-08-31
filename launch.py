@@ -14,9 +14,9 @@ from PIL import Image, ImageTk
 from io import BytesIO
 
 if platform.system() == "Windows":
-	app = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
-	profilesPath = os.path.expandvars("%APPDATA%\\Mozilla\\Firefox\\Profiles")
-	pathToKey = os.path.expandvars("%APPDATA%\\Mozilla\\Firefox\\OLE")
+	app = "C:/Program Files/Mozilla Firefox/firefox.exe"
+	profilesPath = os.path.expandvars("%APPDATA%/Mozilla/Firefox/Profiles")
+	pathToKey = os.path.expandvars("%APPDATA%/Mozilla/Firefox/OLE")
 elif platform.system() == "Linux":
 	app = "/usr/bin/firefox"
 	profilesPath = os.path.expandvars("$HOME/.mozilla/firefox")
@@ -30,7 +30,7 @@ def download_firefox_icon(save_path):
 				return
 
 		# URL of the Firefox icon
-		url = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Firefox_logo%2C_2019.svg/1920px-Firefox_logo%2C_2019.svg.png"
+		url = "https://raw.githubusercontent.com/EvilNick2/firefox-launcher/main/app.ico"
 		
 		# Send a GET request to the URL
 		response = requests.get(url)
@@ -59,17 +59,18 @@ def password(pwd):
 	return key
 
 def detectProfiles():
-    profiles = []
-    pattern = re.compile(r'^[a-zA-Z0-9]{8}\.(.+)$')
-    
-    for dir_name in os.listdir(profilesPath):
-        match = pattern.match(dir_name)
-        if match:
-            profile_name = match.group(1)
-            if profile_name != "default-release":
-                profiles.append(profile_name)
-    
-    return profiles
+		profiles = []
+		invalidProfiles = ["default-release", "ini"]
+		pattern = re.compile(r'^[a-zA-Z0-9]{8}\.(.+)$')
+		
+		for dir_name in os.listdir(profilesPath):
+				match = pattern.match(dir_name)
+				if match:
+						profile_name = match.group(1)
+						if profile_name not in invalidProfiles:
+								profiles.append(profile_name)
+		
+		return profiles
 
 def generate_buttons(root, strings, image_paths, uuids):
 		for string, image_path, uuid in zip(strings, image_paths, uuids):
@@ -77,7 +78,7 @@ def generate_buttons(root, strings, image_paths, uuids):
 				image = Image.open(image_path)
 
 				# Resize the image
-				image = image.resize((128, 128), Image.BICUBIC)
+				image = image.resize((64, 64), Image.BICUBIC)
 
 				photo = ImageTk.PhotoImage(image)
 
@@ -91,7 +92,7 @@ def generate_buttons(root, strings, image_paths, uuids):
 				button.config(command=lambda uuid=uuid: launch_profile(app, uuid))
 
 				button.image = photo  # Keep a reference to the image
-				button.pack(pady=5)  # Add vertical padding
+				button.pack(side="top",fill="x", pady=5)  # Add vertical padding
 
 def launch_profile(app, uuid):
 		print(f"Launching profile: {uuid}")
@@ -105,15 +106,12 @@ def create_new_screen(size=None):
 		new_root = tk.Tk()
 		new_root.title("Firefox Launcher")
 
-		if size == "fullscreen":
-				new_root.state("zoomed")
-
 		firefoxProfiles = detectProfiles()
 
 		# List of strings
 		strings = firefoxProfiles
 
-		icon_path = f"{pathToKey}\\firefox.png"
+		icon_path = f"{pathToKey}/firefox.png"
 		try:
 				download_firefox_icon(icon_path)
 				image_paths = [icon_path] * len(strings)
@@ -138,7 +136,7 @@ def create_new_screen(size=None):
 
 def compare_password(event=None):  # removed the event parameter
 		entered_password = password(password_input.get())
-		with open(f"{pathToKey}\\key.ole", "rb") as file:
+		with open(f"{pathToKey}/key.ole", "rb") as file:
 			stored_password = file.read()
 		if entered_password == stored_password:
 				result_text.set("Password is correct")
@@ -151,6 +149,7 @@ def compare_password(event=None):  # removed the event parameter
 root = tk.Tk()
 root.title("Password Check")
 root.configure(bg="#1c1c1c")
+root.geometry("315x65")
 
 # Create a frame to hold the password input field and check button
 input_frame = tk.Frame(root)
@@ -170,7 +169,7 @@ def create_password_file():
 		new_password_input.pack(side='left')
 
 		def save_new_password(event=None):
-				with open(f"{pathToKey}\\key.ole", "wb") as file:
+				with open(f"{pathToKey}/key.ole", "wb") as file:
 						file.write(password(new_password_input.get()))
 				print('Password file created')
 				new_window.destroy()
@@ -189,7 +188,7 @@ root.withdraw()
 
 if not os.path.exists(pathToKey):
 		os.mkdir(pathToKey)
-if not os.path.isfile(f"{pathToKey}\\key.ole"):
+if not os.path.isfile(f"{pathToKey}/key.ole"):
 		create_password_file()
 else:
 		print('Password file already exists')
