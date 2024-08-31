@@ -40,6 +40,8 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Ensure the token has write permissions for contents
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
