@@ -24,7 +24,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Firefox-Launch-GUI',
+    name='Firefox-Launch-GUI.exe',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
