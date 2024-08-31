@@ -31,19 +31,11 @@ jobs:
       run: |
         pyinstaller Firefox-Launch-GUI.spec
 
-    - name: List dist directory contents
-      run: |
-        ls -R dist
-
-    - name: List Firefox-Launch-GUI directory contents
-      run: |
-        ls -R dist/Firefox-Launch-GUI
-
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI/Firefox-Launch-GUI.exe
+        path: dist/Firefox-Launch-GUI.exe
 
   release:
     needs: build
@@ -58,7 +50,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI
+        path: dist/
 
     - name: Get latest tag
       id: get_latest_tag
@@ -105,6 +97,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/Firefox-Launch-GUI/Firefox-Launch-GUI.exe
+        asset_path: dist/Firefox-Launch-GUI.exe
         asset_name: Firefox-Launch-GUI.exe
         asset_content_type: application/octet-stream

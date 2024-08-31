@@ -24,7 +24,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Firefox-Launch-GUI',
+    name='Firefox-Launch-GUI',  # Name of the executable
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -38,5 +38,5 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon=['app.ico'],
-    dest='dist/Firefox-Launch-GUI'
+    dest='dist/Firefox-Launch-GUI/'  # Output directory
 )
