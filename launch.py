@@ -4,6 +4,8 @@ import os
 import subprocess
 import sv_ttk
 import requests
+import platform
+import re
 from tkinter import ttk
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
@@ -11,8 +13,16 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from PIL import Image, ImageTk
 from io import BytesIO
 
-app = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
-profilesPath = os.path.expandvars("%APPDATA%\Mozilla\Firefox\Profiles")
+if platform.system() == "Windows":
+	app = "C:\\Program Files\\Mozilla Firefox\\firefox.exe"
+	profilesPath = os.path.expandvars("%APPDATA%\\Mozilla\\Firefox\\Profiles")
+	pathToKey = os.path.expandvars("%APPDATA%\\Mozilla\\Firefox\\OLE")
+elif platform.system() == "Linux":
+	app = "/usr/bin/firefox"
+	profilesPath = os.path.expandvars("$HOME/.mozilla/firefox")
+	pathToKey = os.path.expandvars("$HOME/.mozilla/firefox/OLE")
+else:
+	print("Your operating system isn't supported")
 
 def download_firefox_icon(save_path):
 		if os.path.exists(save_path):
@@ -49,13 +59,17 @@ def password(pwd):
 	return key
 
 def detectProfiles():
-		profiles = []
-		for dir_name in os.listdir(profilesPath):
-				if '.' in dir_name:
-						profile_name = dir_name.split('.', 1)[1]
-						if profile_name != "default-release":
-							profiles.append(profile_name)
-		return profiles
+    profiles = []
+    pattern = re.compile(r'^[a-zA-Z0-9]{8}\.(.+)$')
+    
+    for dir_name in os.listdir(profilesPath):
+        match = pattern.match(dir_name)
+        if match:
+            profile_name = match.group(1)
+            if profile_name != "default-release":
+                profiles.append(profile_name)
+    
+    return profiles
 
 def generate_buttons(root, strings, image_paths, uuids):
 		for string, image_path, uuid in zip(strings, image_paths, uuids):
@@ -89,7 +103,7 @@ def create_new_screen(size=None):
 
 		# Create a new window
 		new_root = tk.Tk()
-		new_root.title("Opera Launcher")
+		new_root.title("Firefox Launcher")
 
 		if size == "fullscreen":
 				new_root.state("zoomed")
@@ -132,7 +146,6 @@ def compare_password(event=None):  # removed the event parameter
 		else:
 				result_text.set("Password is incorrect")
 
-pathToKey = os.path.expandvars("%APPDATA%\\Mozilla\\Firefox\\OLE")
 
 # Create the root window
 root = tk.Tk()
