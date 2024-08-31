@@ -35,7 +35,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI
+        path: dist/Firefox-Launch-GUI.exe
 
   release:
     needs: build
@@ -50,7 +50,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI
+        path: dist/Firefox-Launch-GUI.exe
 
     - name: Get latest tag
       id: get_latest_tag
@@ -97,6 +97,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/Firefox-Launch-GUI/Firefox-Launch-GUI.exe
+        asset_path: dist/Firefox-Launch-GUI.exe
         asset_name: Firefox-Launch-GUI.exe
         asset_content_type: application/octet-stream
