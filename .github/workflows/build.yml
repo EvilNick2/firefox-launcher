@@ -48,7 +48,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: firefox-launch-gui
-        path: dist/Firefox-Launch-GUI/
+        path: dist/Firefox-Launch-GUI
 
     - name: Get latest tag
       id: get_latest_tag

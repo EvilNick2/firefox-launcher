@@ -2,12 +2,11 @@
 
 from PyInstaller.utils.hooks import collect_data_files
 
-# Collect data files from the sv_ttk package
 sv_ttk_datas = collect_data_files('sv_ttk')
 
 a = Analysis(
     ['launch.py'],
-    pathex=['.'],  # Add current directory to the search path
+    pathex=['.'],
     binaries=[],
     datas=sv_ttk_datas,
     hiddenimports=[],
