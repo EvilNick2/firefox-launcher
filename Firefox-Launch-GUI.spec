@@ -1,21 +1,23 @@
-# -*- mode: python ; coding: utf-8 -*-
+# Firefox-Launch-GUI.spec
 
+from PyInstaller.utils.hooks import collect_data_files
 
 a = Analysis(
     ['launch.py'],
     pathex=[],
     binaries=[],
     datas=[
-    ('.env\\Lib\\site-packages\\sv_ttk\\py.typed', 'sv_ttk'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\sv.tcl', 'sv_ttk'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\__init__.py', 'sv_ttk'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\dark.tcl', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\light.tcl', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\spritesheet_dark.png', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\spritesheet_light.png', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\sprites_dark.tcl', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\theme\\sprites_light.tcl', 'sv_ttk/theme'), 
-    ('.env\\Lib\\site-packages\\sv_ttk\\__pycache__\\__init__.cpython-310.pyc', 'sv_ttk')],
+        ('sv_ttk/py.typed', 'sv_ttk'), 
+        ('sv_ttk/sv.tcl', 'sv_ttk'), 
+        ('sv_ttk/__init__.py', 'sv_ttk'), 
+        ('sv_ttk/theme/dark.tcl', 'sv_ttk/theme'), 
+        ('sv_ttk/theme/light.tcl', 'sv_ttk/theme'), 
+        ('sv_ttk/theme/spritesheet_dark.png', 'sv_ttk/theme'), 
+        ('sv_ttk/theme/spritesheet_light.png', 'sv_ttk/theme'), 
+        ('sv_ttk/theme/sprites_dark.tcl', 'sv_ttk/theme'), 
+        ('sv_ttk/theme/sprites_light.tcl', 'sv_ttk/theme'), 
+        ('sv_ttk/__pycache__/__init__.cpython-310.pyc', 'sv_ttk')
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
