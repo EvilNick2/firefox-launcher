@@ -53,7 +53,11 @@ jobs:
     - name: Get latest tag
       id: get_latest_tag
       run: |
-        latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+        if git describe --tags `git rev-list --tags --max-count=1` > /dev/null 2>&1; then
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+        else
+          latest_tag=""
+        fi
         echo "Latest tag: $latest_tag"
         echo "::set-output name=latest_tag::$latest_tag"
 
