@@ -2,22 +2,14 @@
 
 from PyInstaller.utils.hooks import collect_data_files
 
+# Collect data files from the sv_ttk package
+sv_ttk_datas = collect_data_files('sv_ttk')
+
 a = Analysis(
     ['launch.py'],
-    pathex=[],
+    pathex=['.'],  # Add current directory to the search path
     binaries=[],
-    datas=[
-        ('sv_ttk/py.typed', 'sv_ttk'), 
-        ('sv_ttk/sv.tcl', 'sv_ttk'), 
-        ('sv_ttk/__init__.py', 'sv_ttk'), 
-        ('sv_ttk/theme/dark.tcl', 'sv_ttk/theme'), 
-        ('sv_ttk/theme/light.tcl', 'sv_ttk/theme'), 
-        ('sv_ttk/theme/spritesheet_dark.png', 'sv_ttk/theme'), 
-        ('sv_ttk/theme/spritesheet_light.png', 'sv_ttk/theme'), 
-        ('sv_ttk/theme/sprites_dark.tcl', 'sv_ttk/theme'), 
-        ('sv_ttk/theme/sprites_light.tcl', 'sv_ttk/theme'), 
-        ('sv_ttk/__pycache__/__init__.cpython-310.pyc', 'sv_ttk')
-    ],
+    datas=sv_ttk_datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
