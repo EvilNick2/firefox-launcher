@@ -4,7 +4,7 @@
   &#xa0;
 </div> -->
 
-<h1 align="center">firefox Launch GUI</h1>
+<h1 align="center">Firefox Launch GUI</h1>
 
 <p align="center">
   <img alt="Github top language" src="https://img.shields.io/github/languages/top/EvilNick2/firefox-launcher?color=56BEB8">
@@ -30,7 +30,7 @@
 
 ## :dart: About ##
 
-Firefox Launch GUI is a Python-based graphical user interface application designed to manage and launch firefox browser profiles. It allows users to securely store a password for accessing the application, detect existing firefox profiles, and launch them directly from the GUI.
+Firefox Launch GUI is a Python-based graphical user interface application designed to launch firefox browser profiles. It allows users to securely store a password for accessing the application, detect existing firefox profiles, and launch them directly from the GUI.
 
 ## :sparkles: Features ##
 
@@ -62,10 +62,10 @@ $ git clone https://github.com/EvilNick2/firefox-launcher
 $ cd firefox-launcher
 
 # Install dependencies
-$ pip install tkinter cryptography Pillow sv_ttk
+$ pip install -r requirements.txt
 
 # Run the project
-$ python firefox-Launch-GUI.py
+$ python launch.py
 ```
 
 ## :memo: License ##
