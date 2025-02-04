@@ -62,10 +62,10 @@ $ git clone https://github.com/EvilNick2/firefox-launcher
 $ cd firefox-launcher
 
 # Install dependencies
-$ yarn
+$ npm install
 
 # Run the project
-$ yarn start
+$ npm run start
 
 # The application will initialize
 ```
