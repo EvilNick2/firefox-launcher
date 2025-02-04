@@ -20,6 +20,14 @@
   <a href="https://github.com/EvilNick2" target="_blank">Author</a>
 </p>
 
+<!-- Status -->
+
+<h4 align="center"> 
+	🚧  Firefox Launcher 🚀 Under construction...  🚧
+</h4> 
+
+<hr>
+
 <br>
 
 ## :dart: About ##
