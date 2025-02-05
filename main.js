@@ -1,12 +1,15 @@
 const { app, BrowserWindow } = require('electron');
-require('electron-reload')(__dirname);
 const CryptoJS = require('crypto-js');
+
+if (process.env.NODE_ENV === 'development') {
+	require('electron-reload')(__dirname);
+}
 
 function createWindow() {
 	const win = new BrowserWindow({
 		width: 800,
 		height:600,
-		icon: 'imgs/icon.png'
+		icon: 'imgs/icon.ico'
 	});
 	win.loadFile('index.html');
 }

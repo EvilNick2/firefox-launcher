@@ -1,17 +1,43 @@
 {
   "name": "firefox-launcher",
   "version": "1.0.0",
+  "description": "A launcher for Firefox profiles",
+  "author": {
+    "name": "evilnick2"
+  },
+  "license": "MIT",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "package": "electron-packager . firefox-launcher --platform=win32 --arch=x64 --out dist --overwrite"
+    "start": "cross-env NODE_ENV=development electron .",
+    "dist": "electron-builder",
+    "dist:installer": "electron-builder --win nsis && rimraf dist/win-unpacked",
+    "dist:exe": "electron-builder --win portable && rimraf dist/win-unpacked"
   },
   "dependencies": {
-    "crypto-js": "^4.2.0",
-    "electron": "^34.0.2",
-    "electron-packager": "^17.1.2"
+    "crypto-js": "^4.2.0"
   },
   "devDependencies": {
-    "electron-reload": "^2.0.0-alpha.1"
+    "cross-env": "^7.0.3",
+    "electron": "^34.0.2",
+    "electron-builder": "^25.1.8",
+    "electron-reload": "^2.0.0-alpha.1",
+    "rimraf": "^6.0.1"
+  },
+  "build": {
+    "appId": "com.evilnick2.firefoxlauncher",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "imgs/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Firefox Launcher",
+      "deleteAppDataOnUninstall": true
+    }
   }
 }
