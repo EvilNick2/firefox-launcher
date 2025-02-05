@@ -3,20 +3,20 @@
 	--dark-mode-foreground: #161616;
 	--light-mode-color: #fafafa;
 	--light-mode-foreground: #f0f0f0;
-  --accentcolor-1: #a480f2;
-  --accentcolor-1-dark: #6053b0;
-  --accentcolor-2: #ea9ab2;
-  --accentcolor-2-dark: #e27396;
+	--accentcolor-1: #a480f2;
+	--accentcolor-1-dark: #6053b0;
+	--accentcolor-2: #ea9ab2;
+	--accentcolor-2-dark: #e27396;
 	--success-color: #4caf50;
 	--warning-color: #8a0000;
 	--primary-color: var(--accentcolor-1);
-  --primary-color-dark: var(--accentcolor-1-dark);
+	--primary-color-dark: var(--accentcolor-1-dark);
 	--secondary-color: var(--accentcolor-2);
 	--secondary-color-dark: var(--accentcolor-2-dark);
-  --background-color: var(--dark-mode-color);
+	--background-color: var(--dark-mode-color);
 	--background-color-secondary: var(--dark-mode-foreground);
-  --foreground-color: var(--light-mode-color);
-  --foreground-color-secondary: var(--light-mode-foreground);
+	--foreground-color: var(--light-mode-color);
+	--foreground-color-secondary: var(--light-mode-foreground);
 }
 
 * {
@@ -32,92 +32,42 @@ body {
 }
 
 .content {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: transparent;
-}
-
-.content h2 {
-    font-size: 2em;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-.content h3 {
-	font-size: 1.5em;
-	margin-bottom: 20px;
-	font-weight: 600;
+	display: flex;
+	flex-direction: column;
+	max-width: 800px;
+	margin:20px 0 0 20px;
+	background-color: transparent;
 }
 
 .card {
-    background-color: var(--background-color-secondary);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+	background-color: var(--background-color-secondary);
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+	box-shadow: 0 0 10px rgba(0,0,0,0.5);
+	width: fit-content;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-size: 2em;
+	font-weight: 600;
+	user-select: none;
+	transition: transform 0.2s, box-shadow 0.2s;
+	cursor: pointer;
 }
 
-.card p {
-    margin-bottom: 10px;
+.card:hover {
+	transform: scale(1.05);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
-.card table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
+.card.clicked {
+	transform: scale(0.9);
+	box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
 }
 
-.card table td {
-    border-bottom: 1px solid var(--background-color);
-    padding: 10px;
-    color: var(--foreground-color);
-}
-
-.card form h3 {
-    color: var(--foreground-color);
-    font-size: 1.5em;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-.card form label {
-    display: block;
-    font-size: 1em;
-    color: var(--foreground-color-secondary);
-    margin-bottom: 5px;
-}
-
-.card form select {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    background-color: var(--background-color);
-    color: var(--foreground-color);
-    border: 1px solid var(--background-color-secondary);
-    border-radius: 4px;
-    font-size: 1em;
-    outline: none;
-}
-
-.card form select:focus {
-    border-color: var(--primary-color);
-}
-
-.card button[type="submit"] {
-    display: inline-block;
-    width: 100%;
-    background-color: var(--primary-color);
-    color: var(--foreground-color);
-    padding: 10px 20px;
-    font-size: 1em;
-    font-weight: 600;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.card button[type="submit"]:hover {
-    background-color: var(--primary-color-dark);
+.profile-icon {
+	width: 64px;
+	height: 64px;
 }
