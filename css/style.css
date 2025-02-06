@@ -35,15 +35,16 @@ body {
 	display: flex;
 	flex-direction: column;
 	max-width: 800px;
-	margin:20px 0 0 20px;
+	align-items: center;
 	background-color: transparent;
+	justify-content: space-evenly;
+	height: 100vh;
 }
 
 .card {
 	background-color: var(--background-color-secondary);
 	border-radius: 8px;
 	padding: 20px;
-	margin-bottom: 20px;
 	box-shadow: 0 0 10px rgba(0,0,0,0.5);
 	width: fit-content;
 	text-align: center;

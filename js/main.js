@@ -2,6 +2,7 @@ function loadProfiles() {
 	window.electron.getProfiles();
 	window.electron.onProfilesReceived((profiles) => {
 		const profilesContainer = document.getElementById('profiles-container');
+		profilesContainer.classList.remove('hidden');
 		profilesContainer.innerHTML = '';
 		const profileCards = [];
 
@@ -32,8 +33,10 @@ function loadProfiles() {
 		});
 
 		let maxWidth = 0;
+		let maxHeight = 0;
 		profileCards.forEach(card => {
 			const cardWidth = card.offsetWidth;
+			maxHeight = maxHeight + card.offsetHeight;
 			if (cardWidth > maxWidth) {
 				maxWidth = cardWidth;
 			}
@@ -43,8 +46,8 @@ function loadProfiles() {
 			card.style.width = `${maxWidth}px`;
 		});
 
-		const contentHeight = profilesContainer.offsetHeight + 90;
-		const adjustedWidth = maxWidth + 55;
+		const contentHeight = maxHeight + profileCards.length*20 + 20;
+		const adjustedWidth = maxWidth+55;
 
 		window.electron.setWindowSize(adjustedWidth, contentHeight);
 	});
