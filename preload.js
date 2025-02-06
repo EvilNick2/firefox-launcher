@@ -6,5 +6,7 @@ contextBridge.exposeInMainWorld('electron', {
 	setWindowSize: (width, height) => ipcRenderer.send('set-window-size', { width, height }),
 	launchProfile: (uuid) => ipcRenderer.send('launch-profile', uuid),
 	refreshProfiles: (callback) => ipcRenderer.on('refresh-profiles', callback),
-	savePassword: (password) => ipcRenderer.send('save-password', password)
+	password: (password) => ipcRenderer.send('password', password),
+	onPasswordAccepted: (callback) => ipcRenderer.on('password-accepted', callback),
+  onPasswordDenied: (callback) => ipcRenderer.on('password-denied', callback)
 });

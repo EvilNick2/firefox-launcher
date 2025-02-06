@@ -1,10 +1,11 @@
 const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
-const { detectProfiles } = require('./js/profileDetector');
+const { detectProfiles } = require('./utils/profileDetector');
 const path = require('path');
 const { execFile } = require('child_process');
-const { savePassword } = require('./js/password');
+const { password } = require('./utils/password');
 
 let mainWindow;
+let isAuthenticated = false;
 
 if (process.env.NODE_ENV === 'development') {
 	require('electron-reload')(__dirname);
@@ -35,7 +36,9 @@ app.whenReady().then(() =>{
     const refreshProfilesItem = new MenuItem({
       label: 'Refresh Profiles',
       click: () => {
+				if (isAuthenticated) {
         mainWindow.webContents.send('refresh-profiles');
+				}
       }
     });
 
@@ -90,6 +93,13 @@ ipcMain.on('launch-profile', (event, uuid) => {
 	});
 });
 
-ipcMain.on('save-password', (event, password) => {
-	savePassword(password);
+ipcMain.on('password', (event, pwd) => {
+	password(pwd, event, (matched) => {
+		if (matched) {
+			isAuthenticated = true;
+			event.reply('password-accepted');
+		} else {
+			event.reply('password-denied');
+		}
+	});
 });

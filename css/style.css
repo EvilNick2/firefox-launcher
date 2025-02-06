@@ -71,3 +71,117 @@ body {
 	width: 64px;
 	height: 64px;
 }
+
+.password-verify {
+	width: 400px;
+	margin: 100px auto;
+	border-radius: 5px;
+}
+
+.password-input-container {
+    background-color: var(--background-color-secondary);
+    box-shadow: 0 5px 9px 0 rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    border-radius: 0 0 5px 5px;
+}
+
+.password-verify h1 {
+	background-color: var(--background-color-secondary);
+	box-shadow: 0 0 9px 0 rgba(0, 0, 0, 0.3);
+	text-align: center;
+	color: var(--foreground-color);
+	font-size: 24px;
+	padding: 20px 0 20px 0;
+	border-bottom: 1px solid var(--background-color);
+	border-radius: 5px 5px 0 0;
+}
+
+.password-input-container label {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50px;
+	height: 50px;
+	background-color: var(--primary-color);
+	color: var(--background-color-secondary);
+	border-radius: 5px 0 0 5px;
+}
+
+.password-input-container input[type="password"],
+.password-input-container input[type="text"] {
+	width: 310px;
+	background-color: var(--background-color-secondary);
+	color: var(--foreground-color);
+	height: 50px;
+	border: 1px solid var(--background-color);
+	padding: 0 15px;
+	border-radius: 0 5px 5px 0;
+	outline: none;
+}
+
+.password-input-container {
+	background-color: var(--background-color-secondary);
+	box-shadow: 0 5px 9px 0 rgba(0, 0, 0, 0.3);
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	padding-top: 20px;
+	border-radius: 0 0 5px 5px;
+}
+
+.password-container {
+	display: flex;
+	position: relative;
+	width: fit-content;
+}
+
+.password-container .fa-eye {
+	position: absolute;
+	right: 15px;
+	top: 35%;
+	cursor: pointer;
+}
+
+.password-container .fa-eye-slash {
+	position: absolute;
+	right: 14px;
+	top: 35%;
+	cursor: pointer;
+}
+
+.password-input-container button {
+	width: 100%;
+	padding: 15px;
+	margin-top: 20px;
+	background-color: var(--primary-color);
+	border: 0;
+	cursor: pointer;
+	font-weight: bold;
+	color: var(--foreground-color);
+	transition: var(--background-color) 0.2;
+	margin-top: 20px;
+	border-radius: 0 0 5px 5px;
+}
+
+.hidden {
+	display: none;
+}
+
+.error-message {
+	background-color: var(--warning-color);
+	width: 400px;
+	height: auto;
+	color: var(--foreground-color);
+	font-size: 1.7em;
+	font-weight: bold;
+	text-align: center;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin: auto;
+	z-index: -1;
+	border-radius: 0 0 20px 20px;
+	box-shadow: 2px 2px 4px var(--background-color-secondary);
+}
