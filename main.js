@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron
 const { detectProfiles } = require('./utils/profileDetector');
 const path = require('path');
 const { execFile } = require('child_process');
-const { password } = require('./utils/password');
+const password = require('./utils/password');
 
 let mainWindow;
 let isAuthenticated = false;
@@ -42,7 +42,18 @@ app.whenReady().then(() =>{
       }
     });
 
+		const deletePasswordItem = new MenuItem({
+			label: 'Delete Password',
+			click: () => {
+				if (isAuthenticated) {
+					password.delete();
+					mainWindow.webContents.send('password-deleted');
+				}
+			}
+		})
+
     const exitMenuItemIndex = fileMenu.submenu.items.findIndex(item => item.label === 'Exit');
+		fileMenu.submenu.insert(exitMenuItemIndex, deletePasswordItem);
     fileMenu.submenu.insert(exitMenuItemIndex, refreshProfilesItem);
   }
 
@@ -94,7 +105,7 @@ ipcMain.on('launch-profile', (event, uuid) => {
 });
 
 ipcMain.on('password', (event, pwd) => {
-	password(pwd, event, (matched) => {
+	password.password(pwd, event, (matched) => {
 		if (matched) {
 			isAuthenticated = true;
 			event.reply('password-accepted');

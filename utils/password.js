@@ -41,4 +41,20 @@ function password(pwd, event, done) {
 	}
 }
 
-module.exports = { encrypt, password };
+function deletePassword() {
+	const userDataPath = app.getPath('userData');
+	const filePath = path.join(userDataPath, 'password.FLE');
+
+	try {
+		if (fs.existsSync(filePath)) {
+			fs.unlinkSync(filePath);
+			console.log(`Password file ${filePath} deleted.`);
+		} else {
+			console.log('Password file does not exist.');
+		}
+	} catch (error) {
+		console.error(`Failed to delete password file: ${error.message}`);
+	}
+}
+
+module.exports = { encrypt, password, delete: deletePassword };
