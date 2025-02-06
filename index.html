@@ -10,6 +10,10 @@
 	<div class="content" id="profiles-container">
 		<!-- This is where the generated cards will be placed -->
 	</div>
+	<div class="password-input-container">
+		<input type="password" id="password-input" placeholder="Enter password">
+		<button id="save-password-button">Save Password</button>
+	</div>
 	<script>
 		function loadProfiles() {
 			window.electron.getProfiles();
@@ -62,6 +66,11 @@
 				window.electron.setWindowSize(adjustedWidth, contentHeight);
 			});
 		}
+
+		document.getElementById('save-password-button').addEventListener('click', () => {
+			const password = document.getElementById('password-input').value;
+			window.electron.password(password);
+		});
 
 		loadProfiles();
 

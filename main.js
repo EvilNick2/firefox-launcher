@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
 const { detectProfiles } = require('./js/profileDetector');
-const CryptoJS = require('crypto-js');
 const path = require('path');
 const { execFile } = require('child_process');
+const { savePassword } = require('./js/password');
 
 let mainWindow;
 
@@ -88,4 +88,8 @@ ipcMain.on('launch-profile', (event, uuid) => {
 			return;
 		}
 	});
+});
+
+ipcMain.on('password', (event, password) => {
+	password(password);
 });
