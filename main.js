@@ -47,12 +47,6 @@ app.whenReady().then(() =>{
 	if (helpMenuIndex !== -1) {
 		menu.items[helpMenuIndex].submenu.clear();
 		menu.items[helpMenuIndex].submenu.append(new MenuItem({
-			label: 'Author',
-			click: () => {
-				shell.openExternal('https://github.com/EvilNick2');
-			}
-		}));
-		menu.items[helpMenuIndex].submenu.append(new MenuItem({
 			label: 'Documentation',
 			click: () => {
 				shell.openExternal('https://github.com/EvilNick2/firefox-launcher');
@@ -62,6 +56,12 @@ app.whenReady().then(() =>{
 			label: 'Issues',
 			click: () => {
 				shell.openExternal('https://github.com/EvilNick2/firefox-launcher/issues');
+			}
+		}));
+		menu.items[helpMenuIndex].submenu.append(new MenuItem({
+			label: 'Author',
+			click: () => {
+				shell.openExternal('https://github.com/EvilNick2');
 			}
 		}));
 	}
