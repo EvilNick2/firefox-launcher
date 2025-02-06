@@ -90,6 +90,6 @@ ipcMain.on('launch-profile', (event, uuid) => {
 	});
 });
 
-ipcMain.on('password', (event, password) => {
-	password(password);
+ipcMain.on('save-password', (event, password) => {
+	savePassword(password);
 });

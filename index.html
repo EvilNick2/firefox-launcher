@@ -69,7 +69,7 @@
 
 		document.getElementById('save-password-button').addEventListener('click', () => {
 			const password = document.getElementById('password-input').value;
-			window.electron.password(password);
+			window.electron.savePassword(password);
 		});
 
 		loadProfiles();
