@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
-const { detectProfiles } = require('./utils/profileDetector');
 const path = require('path');
 const { execFile } = require('child_process');
-const password = require('./utils/password');
+const { detectProfiles } = require(path.join(__dirname, 'src', 'utils', 'profileDetector'));
+const password = require(path.join(__dirname, 'src', 'utils', 'password'));
 
 let mainWindow;
 let isAuthenticated = false;
@@ -18,10 +18,10 @@ function createWindow() {
 		icon: 'imgs/icon.ico',
 		autoHideMenuBar: true,
 		webPreferences: {
-			preload: path.join(__dirname, 'preload.js')
+			preload: path.join(__dirname, 'src', 'preload.js')
 		}
 	});
-	mainWindow.loadFile('index.html');
+	mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
 }
 
 app.whenReady().then(() =>{
