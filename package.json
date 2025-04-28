@@ -1,6 +1,6 @@
 {
   "name": "firefox-launcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A launcher for Firefox profiles",
   "author": {
     "name": "evilnick2"
@@ -30,7 +30,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "imgs/icon.ico",
+      "icon": "src/imgs/icon.ico",
       "executableName": "firefox-launcher"
     },
     "nsis": {
