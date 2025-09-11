@@ -1,11 +1,170 @@
 const { app, BrowserWindow, ipcMain, Menu, MenuItem, shell } = require('electron');
 const path = require('path');
-const { execFile } = require('child_process');
+const fs = require('fs');
+const os = require('os');
+const { execFile, spawn } = require('child_process');
+const { rejects } = require('assert');
+let rawConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
 const { detectProfiles } = require(path.join(__dirname, 'src', 'utils', 'profileDetector'));
 const password = require(path.join(__dirname, 'src', 'utils', 'password'));
 
+function resolveEnv(str) {
+	return String(str).replace(/%([^%]+)%/g, (_, name) => process.env[name] || '');
+}
+const config = {};
+function loadConfigObject(obj) {
+	for (const key of Object.keys(config)) delete config[key];
+	for (const [key, value] of Object.entries(obj)) {
+		config[key] = typeof value === 'string' ? resolveEnv(value) : value;
+	}
+}
+loadConfigObject(rawConfig);
+
 let mainWindow;
 let isAuthenticated = false;
+
+function runDiskpart(script) {
+	return new Promise((resolve, reject) => {
+		const tmp = path.join(os.tmpdir(), `dp-${Date.now()}.txt`);
+		fs.writeFileSync(tmp, script);
+		const child = spawn('diskpart', ['/s', tmp]);
+		let stdout = '', stderr = '';
+		child.stdout.on('data', d => stdout += d);
+		child.stderr.on('data', d => stderr += d);
+		child.on('exit', code => {
+			fs.unlinkSync(tmp);
+			code === 0 ? resolve(stdout) : reject(new Error(stderr || stdout));
+		});
+	});
+}
+
+async function listVolumes() {
+	const out = await runDiskpart('list volume\n');
+	const volumes = [];
+	out.split(/\r?\n/).forEach(line => {
+		const m = line.match(/^\s*Volume\s+(\d+)\s+[A-Z]?\s+(\S+)/);
+		if (m) volumes.push({ num: m[1], label: m[2] });
+	});
+	return volumes;
+}
+
+function createSymlinks(profilePath) {
+	const localSourceBase = config.localSymlinkSource || (config.driveLetter ? path.join(config.driveLetter + ':', 'Mozilla', 'LocalAppData'): '');
+	const appSourceBase = config.roamingSymlinkSource || (config.driveLetter ? path.join(config.driveLetter + ':', 'Mozilla', 'AppData'): '');
+	const localSource = path.join(localSourceBase, profilePath);
+	const appSource = path.join(appSourceBase, profilePath);
+	const localDestRoot = config.localFirefoxDir || path.join(process.env.LOCALAPPDATA, 'Mozilla', 'Firefox');
+	const appDestRoot = config.roamingFirefoxDir || path.join(process.env.APPDATA, 'Mozilla', 'Firefox');
+	if (!fs.existsSync(localSource) || !fs.existsSync(appSource)) {
+		throw new Error('Symlink source not found; ensure VHDX is mounted');
+	}
+	fs.mkdirSync(path.dirname(path.join(localDestRoot, profilePath)), { recursive: true });
+	fs.mkdirSync(path.dirname(path.join(appDestRoot, profilePath)), { recursive: true });
+	fs.symlinkSync(localSource, path.join(localDestRoot, profilePath));
+	fs.symlinkSync(appSource, path.join(appDestRoot, profilePath));
+}
+
+function removeSymlinks(base) {
+	if (!base || !path.isAbsolute(base) || !fs.existsSync(base)) return;
+	for (const entry of fs.readdirSync(base)) {
+		const full = path.join(base, entry);
+		const stat = fs.lstatSync(full);
+		if (stat.isSymbolicLink()) {
+			fs.unlinkSync(full);
+		} else if (stat.isDirectory()) {
+			removeSymlinks(full);
+		}
+	}
+}
+
+async function mountVhdx() {
+	const { vhdxPath, volumeLabel, driveLetter, profilesIniPath, tempIniPath } = config;
+	const before = await listVolumes();
+	await runDiskpart(`select vdisk file="${vhdxPath}"
+attach vdisk
+`);
+	const after = await listVolumes();
+	const newVol = after.find(v => !before.some(b => b.num === v.num) && v.label === volumeLabel);
+	if (!newVol) throw new Error('Volume not found');
+	await runDiskpart(`select volume ${newVol.num}
+assign letter=${driveLetter}
+`);
+	const tempData = fs.readFileSync(tempIniPath, 'utf8');
+	const match = tempData.match(/path\s*=\s*(.*)/i);
+	if (match) createSymlinks(match[1].trim());
+	fs.appendFileSync(profilesIniPath, `\n\n${tempData}`);
+	fs.unlinkSync(tempIniPath);
+	mainWindow.webContents.send('refresh-profiles');
+}
+
+
+async function unmountVhdx() {
+	const { driveLetter, vhdxPath, profilesIniPath, profileName, tempIniPath } = config;
+	if (!profilesIniPath) throw new Error('profilesIniPath is not set in configuration');
+  if (!fs.existsSync(profilesIniPath)) throw new Error(`profiles.ini not found at: ${profilesIniPath}`);
+  if (!tempIniPath) throw new Error('tempIniPath is not set in configuration');
+
+  const text = fs.readFileSync(profilesIniPath, 'utf8');
+  const lines = text.split(/\r?\n/);
+
+  const sectionStartIdxs = [];
+  for (let i = 0; i < lines.length; i++) {
+		if (/^\s*\[.+\]\s*$/.test(lines[i])) sectionStartIdxs.push(i);
+  }
+  sectionStartIdxs.push(lines.length);
+
+  let removed = false;
+  let savedSection = [];
+  const outLines = [];
+  const nameRe = new RegExp('^\\s*Name\\s*=\\s*' + profileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
+
+  for (let s = 0; s < sectionStartIdxs.length - 1; s++) {
+		const start = sectionStartIdxs[s];
+		const end = sectionStartIdxs[s + 1];
+		const section = lines.slice(start, end);
+		const isTarget = section.some(l => nameRe.test(l));
+		if (!removed && isTarget) {
+			savedSection = section;
+			removed = true;
+		} else {
+			outLines.push(...section);
+		}
+  }
+
+  if (!removed) {
+		throw new Error(`Profile with Name=${profileName} not found in profiles.ini`);
+  }
+
+  fs.mkdirSync(path.dirname(tempIniPath), { recursive: true });
+  fs.writeFileSync(tempIniPath, savedSection.join('\n').replace(/\n*$/, '\n'));
+  fs.writeFileSync(profilesIniPath, outLines.join('\n').replace(/\n*$/, '\n'));
+	const localDestRoot = config.localFirefoxDir || path.join(process.env.LOCALAPPDATA, 'Mozilla', 'Firefox');
+	const appDestRoot = config.roamingFirefoxDir || path.join(process.env.APPDATA, 'Mozilla', 'Firefox');
+	removeSymlinks(path.join(localDestRoot, 'Profiles'));
+	removeSymlinks(path.join(appDestRoot, 'Profiles'));
+	await runDiskpart(`select volume ${driveLetter}
+remove letter=${driveLetter}
+select vdisk file="${vhdxPath}"
+detach vdisk
+`);
+	mainWindow.webContents.send('refresh-profiles');
+}
+
+function openConfigWindow() {
+    const configWindow = new BrowserWindow({
+        width: 400,
+        height: 500,
+        parent: mainWindow,
+        modal: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'src', 'preload.js')
+        }
+    });
+    configWindow.loadFile(path.join(__dirname, 'src', 'config.html'));
+    configWindow.once('ready-to-show', () => {
+        configWindow.maximize();
+    });
+}
 
 if (process.env.NODE_ENV === 'development') {
 	require('electron-reload')(__dirname);
@@ -43,6 +202,24 @@ app.whenReady().then(() =>{
       }
     });
 
+		const mountProfileItem = new MenuItem({
+			label: 'Mount Profile',
+			click: () => {
+				if (isAuthenticated) {
+					mountVhdx().catch(err => console.error(err));
+				}
+			}
+		});
+
+		const unmountProfileItem = new MenuItem({
+			label: 'Unmount Profile',
+			click: () => {
+				if (isAuthenticated) {
+					unmountVhdx().catch(err => console.error(err));
+				}
+			}
+		});
+
 		const deletePasswordItem = new MenuItem({
 			label: 'Delete Password',
 			click: () => {
@@ -51,11 +228,23 @@ app.whenReady().then(() =>{
 					mainWindow.webContents.send('password-deleted');
 				}
 			}
+		});
+
+		const settingsItem = new MenuItem({
+			label: 'Settings',
+			click: () => {
+				if (isAuthenticated) {
+					openConfigWindow();
+				}
+			}
 		})
 
     const exitMenuItemIndex = fileMenu.submenu.items.findIndex(item => item.label === 'Exit');
 		fileMenu.submenu.insert(exitMenuItemIndex, deletePasswordItem);
+		fileMenu.submenu.insert(exitMenuItemIndex, unmountProfileItem);
+		fileMenu.submenu.insert(exitMenuItemIndex, mountProfileItem);
     fileMenu.submenu.insert(exitMenuItemIndex, refreshProfilesItem);
+    fileMenu.submenu.insert(exitMenuItemIndex, settingsItem);
   }
 
 	const helpMenuIndex = menu.items.findIndex(item => item.label === 'Help');
@@ -84,11 +273,32 @@ app.whenReady().then(() =>{
   Menu.setApplicationMenu(menu);
 });
 
-const profilesPath = path.join(process.env.APPDATA, 'Mozilla', 'Firefox', 'Profiles');
-
 ipcMain.on('get-profiles', (event) =>{
+	const profilesPath = config.profilePath || path.join(process.env.APPDATA, 'Mozilla', 'Firefox', 'Profiles');
 	const profiles = detectProfiles(profilesPath);
-	event.reply('send-profiles', profiles)
+	event.reply('send-profiles', profiles);
+});
+
+ipcMain.handle('mount-vhdx', () => {
+	if (isAuthenticated) {
+		return mountVhdx();
+	}
+});
+
+ipcMain.handle('unmount-vhdx', () => {
+	if (isAuthenticated) {
+		return unmountVhdx();
+	}
+});
+
+ipcMain.handle('get-config', () => {
+	return rawConfig;
+});
+
+ipcMain.handle('save-config', (event, newConfig) => {
+	fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(newConfig, null, 2));
+	rawConfig = newConfig;
+	loadConfigObject(rawConfig);
 });
 
 ipcMain.on('set-window-size', (event, { width, height }) => {

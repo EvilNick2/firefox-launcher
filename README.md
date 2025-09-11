@@ -38,7 +38,9 @@ Firefox Launcher is a password-protected Electron application that allows you to
 
 :heavy_check_mark: Password protection;\
 :heavy_check_mark: Launch different Firefox profiles;\
-:heavy_check_mark: Secure and easy to use;
+:heavy_check_mark: Secure and easy to use;\
+:heavy_check_mark: Mount and unmount VHDX-backed profiles;
+
 
 ## :rocket: Technologies ##
 
@@ -69,6 +71,12 @@ $ npm run start
 
 # The application will initialize
 ```
+
+## Mounting VHDX Profiles
+
+Adjust drive letters, VHDX/profile paths, and symlink source/destination directories from **File -> Settings**. The values are stored in `config.json`, but you can edit them through the form without touching the file directly.
+
+After saving your settings, authenticate and use **Mount Profile** or **Unmount Profile** from the File menu. The launcher refreshes the profile list automaticlly. Administrator privileges are required for disk and symlink operations.
 
 ## :memo: License ##
 

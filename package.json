@@ -1,6 +1,6 @@
 {
   "name": "firefox-launcher",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A launcher for Firefox profiles",
   "author": {
     "name": "evilnick2"
@@ -18,9 +18,9 @@
     "crypto-js": "^4.2.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
-    "electron": "^34.1.0",
-    "electron-builder": "^25.1.8",
+    "cross-env": "^10.0.0",
+    "electron": "^38.1.0",
+    "electron-builder": "^26.0.12",
     "electron-reload": "^2.0.0-alpha.1",
     "rimraf": "^6.0.1"
   },
@@ -31,7 +31,8 @@
         "nsis"
       ],
       "icon": "src/imgs/icon.ico",
-      "executableName": "firefox-launcher"
+      "executableName": "firefox-launcher",
+      "requestedExecutionLevel": "requireAdministrator"
     },
     "nsis": {
       "oneClick": false,

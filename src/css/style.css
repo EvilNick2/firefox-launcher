@@ -186,3 +186,62 @@ body {
 	border-radius: 0 0 20px 20px;
 	box-shadow: 2px 2px 4px var(--background-color-secondary);
 }
+
+.config-form {
+  background-color: var(--background-color-secondary);
+  box-shadow: 0 5px 9px 0 rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  padding: 16px;
+  margin: 24px auto;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.config-form br {
+  display: none;
+}
+
+.config-form label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.config-form input[type="text"] {
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 5px;
+  border: 1px solid var(--background-color);
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  outline: none;
+}
+
+.config-form input[type="text"]::placeholder {
+  color: #aaaaaa;
+}
+
+.config-form input[type="text"]:focus {
+  border-color: var(--primary-color);
+}
+
+.config-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  margin-top: 4px;
+  background-color: var(--primary-color);
+  border: 0;
+  cursor: pointer;
+  font-weight: bold;
+  color: var(--foreground-color);
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.config-form button[type="submit"]:hover {
+  background-color: var(--primary-color-dark);
+}

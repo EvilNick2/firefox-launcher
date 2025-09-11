@@ -8,5 +8,7 @@ contextBridge.exposeInMainWorld('electron', {
 	refreshProfiles: (callback) => ipcRenderer.on('refresh-profiles', callback),
 	password: (password) => ipcRenderer.send('password', password),
 	onPasswordAccepted: (callback) => ipcRenderer.on('password-accepted', callback),
-  onPasswordDenied: (callback) => ipcRenderer.on('password-denied', callback)
+  onPasswordDenied: (callback) => ipcRenderer.on('password-denied', callback),
+	getConfig: () => ipcRenderer.invoke('get-config'),
+	saveConfig: (cfg) => ipcRenderer.invoke('save-config', cfg)
 });
