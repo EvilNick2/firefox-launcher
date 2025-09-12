@@ -47,17 +47,22 @@ jobs:
               core.setOutput('exists', 'false');
             }
 
-      - name: Build and publish installer
+      - name: Build installer (no publish)
         if: steps.check.outputs.exists != 'true'
         run: npm run ci:dist:installer
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_SKIP_SIGNING: true
 
-      - name: Upload installer artifact
-        uses: actions/upload-artifact@v4
+      - name: Create or update GitHub Release and upload only .exe
+        if: steps.check.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
         with:
-          name: windows-installer
-          path: dist/*.exe
-          if-no-files-found: warn
+          tag_name: v${{ steps.pkg.outputs.version }}
+          name: Firefox Launcher v${{ steps.pkg.outputs.version }}
+          files: |
+            dist/*.exe
+          draft: false
+          prerelease: false
+          make_latest: true
+          target_commitish: ${{ github.sha }}
+          fail_on_unmatched_files: true

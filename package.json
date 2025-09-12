@@ -11,7 +11,7 @@
     "start": "cross-env NODE_ENV=development electron .",
     "dist": "electron-builder",
     "dist:installer": "electron-builder --win nsis && rimraf dist/win-unpacked",
-    "ci:dist:installer": "electron-builder --win nsis --publish always && rimraf dist/win-unpacked",
+    "ci:dist:installer": "electron-builder --win nsis --publish never && rimraf dist/win-unpacked",
     "dist:exe": "electron-builder --win portable && rimraf dist/win-unpacked",
     "dist:all": "npm run dist:installer && npm run dist:exe"
   },
@@ -33,7 +33,6 @@
         "releaseType": "release"
       }
     ],
-    "publishAutoUpdate": false,
     "win": {
       "target": [
         "nsis"
