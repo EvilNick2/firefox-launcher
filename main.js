@@ -4,7 +4,26 @@ const fs = require('fs');
 const os = require('os');
 const { execFile, spawn } = require('child_process');
 const { rejects } = require('assert');
-let rawConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
+
+const defaultConfigPath = path.join(__dirname, 'config.json');
+const userConfigPath = path.join(app.getPath('userData'), 'config.json');
+function readInitialConfig() {
+	try {
+		if (fs.existsSync(userConfigPath)) {
+			return JSON.parse(fs.readFileSync(userConfigPath, 'utf8'));
+		}
+		const defaults = JSON.parse(fs.readFileSync(defaultConfigPath, 'utf8'));
+		try {
+			fs.mkdirSync(path.dirname(userConfigPath), { recursive: true });
+			fs.writeFileSync(userConfigPath, JSON.stringify(defaults, null, 2));
+		} catch (_) {  }
+		return defaults;
+	} catch (e) {
+		console.error('Failed to load configuration:', e);
+		return {};
+	}
+}
+let rawConfig = readInitialConfig();
 const { detectProfiles } = require(path.join(__dirname, 'src', 'utils', 'profileDetector'));
 const password = require(path.join(__dirname, 'src', 'utils', 'password'));
 
@@ -296,7 +315,8 @@ ipcMain.handle('get-config', () => {
 });
 
 ipcMain.handle('save-config', (event, newConfig) => {
-	fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(newConfig, null, 2));
+	fs.mkdirSync(path.dirname(userConfigPath), { recursive: true });
+	fs.writeFileSync(userConfigPath, JSON.stringify(newConfig, null, 2));
 	rawConfig = newConfig;
 	loadConfigObject(rawConfig);
 });
