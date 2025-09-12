@@ -42,6 +42,27 @@ loadConfigObject(rawConfig);
 let mainWindow;
 let isAuthenticated = false;
 
+function serializeArg(a) {
+    if (a instanceof Error) return a.stack || a.message || String(a);
+    if (typeof a === 'object') {
+        try { return JSON.stringify(a); } catch (_) { return String(a); }
+    }
+    return String(a);
+}
+function logToRenderer(level, ...args) {
+    try {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('log', { level, args: args.map(serializeArg) });
+        }
+    } catch (_) {}
+}
+function logInfo(...args) { console.log(...args); logToRenderer('log', ...args); }
+function logWarn(...args) { console.warn(...args); logToRenderer('warn', ...args); }
+function logError(...args) { console.error(...args); logToRenderer('error', ...args); }
+
+process.on('uncaughtException', (err) => logError('Uncaught exception:', err));
+process.on('unhandledRejection', (reason) => logError('Unhandled rejection:', reason));
+
 function runDiskpart(script) {
 	return new Promise((resolve, reject) => {
 		const tmp = path.join(os.tmpdir(), `dp-${Date.now()}.txt`);
@@ -198,8 +219,9 @@ function openConfigWindow() {
     });
 }
 
-if (process.env.NODE_ENV === 'development') {
-	require('electron-reload')(__dirname);
+if (!app.isPackaged) {
+	try { require('electron-reload')(__dirname); }
+	catch (e) {}
 }
 
 function createWindow() {
@@ -238,7 +260,7 @@ app.whenReady().then(() =>{
 			label: 'Mount Profile',
 			click: () => {
 				if (isAuthenticated) {
-					mountVhdx().catch(err => console.error(err));
+					mountVhdx().catch(err => logError(err));
 				}
 			}
 		});
@@ -247,7 +269,7 @@ app.whenReady().then(() =>{
 			label: 'Unmount Profile',
 			click: () => {
 				if (isAuthenticated) {
-					unmountVhdx().catch(err => console.error(err));
+					unmountVhdx().catch(err => logError(err));
 				}
 			}
 		});

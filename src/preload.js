@@ -1,5 +1,17 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+ipcRenderer.on('log', (_event, payload) => {
+  try {
+    const level = payload && payload.level;
+    const args = (payload && payload.args) || [];
+    if (level && typeof console[level] === 'function') {
+      console[level](...args);
+    } else {
+      console.log(...args);
+    }
+  } catch (e) {}
+});
+
 contextBridge.exposeInMainWorld('electron', {
 	getProfiles: () => ipcRenderer.send('get-profiles'),
 	onProfilesReceived: (callback) => ipcRenderer.on('send-profiles', (event, profiles) => callback(profiles)),
