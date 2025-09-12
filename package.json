@@ -27,6 +27,13 @@
   },
   "build": {
     "appId": "com.evilnick2.firefoxlauncher",
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ],
+    "publishAutoUpdate": false,
     "win": {
       "target": [
         "nsis"
@@ -41,7 +48,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Firefox Launcher",
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "differentialPackage": false
     }
   }
 }
