@@ -99,15 +99,28 @@ function removeSymlinks(base) {
 async function mountVhdx() {
 	const { vhdxPath, volumeLabel, driveLetter, profilesIniPath, tempIniPath } = config;
 	const before = await listVolumes();
-	await runDiskpart(`select vdisk file="${vhdxPath}"
+	try {
+		await runDiskpart(`select vdisk file="${vhdxPath}"
 attach vdisk
 `);
+	} catch (e) {
+		const msg = String((e && e.message) || e || '').toLowerCase();
+		if (!msg.includes('already attached')) throw e;
+	}
 	const after = await listVolumes();
-	const newVol = after.find(v => !before.some(b => b.num === v.num) && v.label === volumeLabel);
-	if (!newVol) throw new Error('Volume not found');
-	await runDiskpart(`select volume ${newVol.num}
+	let vol = after.find(v => !before.some(b => b.num === v.num) && v.label === volumeLabel);
+	if (!vol) {
+		vol = after.find(v => v.label === volumeLabel);
+	}
+	if (!vol) throw new Error('Volume not found');
+	try {
+		await runDiskpart(`select volume ${vol.num}
 assign letter=${driveLetter}
 `);
+	} catch (e) {
+		const msg = String((e && e.message) || e || '').toLowerCase();
+		if (!(msg.includes('assigned') || msg.includes('in use'))) throw e;
+	}
 	const tempData = fs.readFileSync(tempIniPath, 'utf8');
 	const match = tempData.match(/path\s*=\s*(.*)/i);
 	if (match) createSymlinks(match[1].trim());
