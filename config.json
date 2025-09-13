@@ -9,5 +9,8 @@
   "localFirefoxDir": "",
   "roamingFirefoxDir": "",
   "localSymlinkSource": "",
-  "roamingSymlinkSource": ""
+  "roamingSymlinkSource": "",
+  "firefoxEdition": "stable",
+  "developerProfiles": "",
+  "hiddenProfiles": ""
 }

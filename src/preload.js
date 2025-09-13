@@ -15,6 +15,8 @@ ipcRenderer.on('log', (_event, payload) => {
 contextBridge.exposeInMainWorld('electron', {
 	getProfiles: () => ipcRenderer.send('get-profiles'),
 	onProfilesReceived: (callback) => ipcRenderer.on('send-profiles', (event, profiles) => callback(profiles)),
+	onProfilesReceivedOnce: (callback) => ipcRenderer.once('send-profiles', (event, profiles) => callback(profiles)),
+	offProfilesReceived: () => ipcRenderer.removeAllListeners('send-profiles'),
 	setWindowSize: (width, height) => ipcRenderer.send('set-window-size', { width, height }),
 	launchProfile: (uuid) => ipcRenderer.send('launch-profile', uuid),
 	refreshProfiles: (callback) => ipcRenderer.on('refresh-profiles', callback),
@@ -22,5 +24,6 @@ contextBridge.exposeInMainWorld('electron', {
 	onPasswordAccepted: (callback) => ipcRenderer.on('password-accepted', callback),
   onPasswordDenied: (callback) => ipcRenderer.on('password-denied', callback),
 	getConfig: () => ipcRenderer.invoke('get-config'),
-	saveConfig: (cfg) => ipcRenderer.invoke('save-config', cfg)
+	saveConfig: (cfg) => ipcRenderer.invoke('save-config', cfg),
+	listProfiles: (profilesPath) => ipcRenderer.invoke('list-profiles', profilesPath)
 });

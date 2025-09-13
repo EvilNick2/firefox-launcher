@@ -229,6 +229,79 @@ body {
   border-color: var(--primary-color);
 }
 
+.config-form select {
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 5px;
+  border: 1px solid var(--background-color);
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  outline: none;
+}
+
+.config-form select:focus {
+  border-color: var(--primary-color);
+}
+
+.config-form fieldset {
+  border: 1px solid var(--background-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.config-form fieldset legend {
+  padding: 0 6px;
+  font-weight: 700;
+  color: var(--foreground-color);
+}
+
+#developerProfilesList,
+#hiddenProfilesList {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px 12px;
+}
+
+#developerProfilesList label,
+#hiddenProfilesList label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background-color: var(--background-color);
+  border: 1px solid var(--background-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+#developerProfilesList label:hover,
+#hiddenProfilesList label:hover {
+  border-color: var(--primary-color);
+}
+
+#developerProfilesList input[type="checkbox"],
+#hiddenProfilesList input[type="checkbox"] {
+  accent-color: var(--primary-color);
+}
+
+.config-form button[type="button"] {
+  padding: 8px 12px;
+  background-color: var(--primary-color);
+  border: 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--foreground-color);
+  border-radius: 5px;
+  width: fit-content;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.config-form button[type="button"]:hover {
+  background-color: var(--primary-color-dark);
+}
+
 .config-form button[type="submit"] {
   width: 100%;
   padding: 12px;

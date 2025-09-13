@@ -43,18 +43,18 @@ let mainWindow;
 let isAuthenticated = false;
 
 function serializeArg(a) {
-    if (a instanceof Error) return a.stack || a.message || String(a);
-    if (typeof a === 'object') {
-        try { return JSON.stringify(a); } catch (_) { return String(a); }
-    }
-    return String(a);
+	if (a instanceof Error) return a.stack || a.message || String(a);
+	if (typeof a === 'object') {
+		try { return JSON.stringify(a); } catch (_) { return String(a); }
+	}
+	return String(a);
 }
 function logToRenderer(level, ...args) {
-    try {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-            mainWindow.webContents.send('log', { level, args: args.map(serializeArg) });
-        }
-    } catch (_) {}
+	try {
+		if (mainWindow && !mainWindow.isDestroyed()) {
+			mainWindow.webContents.send('log', { level, args: args.map(serializeArg) });
+		}
+	} catch (_) {}
 }
 function logInfo(...args) { console.log(...args); logToRenderer('log', ...args); }
 function logWarn(...args) { console.warn(...args); logToRenderer('warn', ...args); }
@@ -204,19 +204,19 @@ detach vdisk
 }
 
 function openConfigWindow() {
-    const configWindow = new BrowserWindow({
-        width: 400,
-        height: 500,
-        parent: mainWindow,
-        modal: true,
-        webPreferences: {
-            preload: path.join(__dirname, 'src', 'preload.js')
-        }
-    });
-    configWindow.loadFile(path.join(__dirname, 'src', 'config.html'));
-    configWindow.once('ready-to-show', () => {
-        configWindow.maximize();
-    });
+	const configWindow = new BrowserWindow({
+		width: 400,
+		height: 500,
+		parent: mainWindow,
+		modal: true,
+		webPreferences: {
+			preload: path.join(__dirname, 'src', 'preload.js')
+		}
+	});
+	configWindow.loadFile(path.join(__dirname, 'src', 'config.html'));
+	configWindow.once('ready-to-show', () => {
+		configWindow.maximize();
+	});
 }
 
 if (!app.isPackaged) {
@@ -327,10 +327,38 @@ app.whenReady().then(() =>{
   Menu.setApplicationMenu(menu);
 });
 
+ipcMain.handle('list-profiles', (_event, pathOverride) => {
+	try {
+		const defaultPath = path.join(process.env.APPDATA, 'Mozilla', 'Firefox', 'Profiles');
+		const userPath = pathOverride ? resolveEnv(pathOverride) : undefined;
+		const profilesPath = userPath || config.profilesPath || defaultPath;
+		const profiles = detectProfiles(profilesPath);
+		return profiles;
+	} catch (e) {
+		logWarn('Failed to list profiles:', e);
+		return [];
+	}
+});
+
 ipcMain.on('get-profiles', (event) =>{
-	const profilesPath = config.profilePath || path.join(process.env.APPDATA, 'Mozilla', 'Firefox', 'Profiles');
-	const profiles = detectProfiles(profilesPath);
-	event.reply('send-profiles', profiles);
+	try {
+		const profilesPath = config.profilesPath || path.join(process.env.APPDATA, 'Mozilla', 'Firefox', 'Profiles');
+		let profiles = detectProfiles(profilesPath);
+		let hidden = config.hiddenProfiles;
+		let hiddenSet = new Set();
+		if (Array.isArray(hidden)) {
+			hiddenSet = new Set(hidden.map(s => String(s).toLowerCase()));
+		} else if (typeof hidden === 'string') {
+			hiddenSet = new Set(hidden.split(',').map(s => s.trim().toLowerCase()).filter(Boolean));
+		}
+		if (hiddenSet.size > 0) {
+			profiles = profiles.filter(p => !hiddenSet.has(String(p).toLowerCase()));
+		}
+		event.reply('send-profiles', profiles);
+	} catch (e) {
+		logWarn('Failed to get profiles:', e);
+		event.reply('send-profiles', []);
+	}
 });
 
 ipcMain.handle('mount-vhdx', () => {
@@ -361,7 +389,36 @@ ipcMain.on('set-window-size', (event, { width, height }) => {
 });
 
 ipcMain.on('launch-profile', (event, uuid) => {
-	const appPath = 'C:/Program Files/Mozilla Firefox/firefox.exe';
+	function findFirefoxPath(edition) {
+		const candidates = [];
+		if (edition === 'developer') {
+			candidates.push(
+				'C:/Program Files/Firefox Developer Edition/firefox.exe',
+				'C:/Program Files (x86)/Firefox Developer Edition/firefox.exe'
+			);
+		} else {
+			candidates.push(
+				'C:/Program Files/Mozilla Firefox/firefox.exe',
+				'C:/Program Files (x86)/Mozilla Firefox/firefox.exe'
+			);
+		}
+		for (const p of candidates) {
+			try { if (fs.existsSync(p)) return p; } catch (_) {}
+		}
+		return candidates[0];
+	}
+
+	function shouldUseDeveloper(profileName) {
+		const raw = config.developerProfiles;
+		if (!raw) return false;
+		let list = [];
+		if (Array.isArray(raw)) list = raw;
+		else if (typeof raw === 'string') list = raw.split(',');
+		return list.some(name => String(name).trim().toLowerCase() === String(profileName).trim().toLowerCase());
+	}
+
+	const edition = shouldUseDeveloper(uuid) ? 'developer' : (config.firefoxEdition || 'stable');
+	const appPath = findFirefoxPath(edition);
 	execFile(appPath, ['-new-instance', '-P', uuid], (error, stdout, stderr) => {
 		if (error) {
 			console.error(`Error launching profile: ${error.message}`);

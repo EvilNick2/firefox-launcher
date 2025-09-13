@@ -7,6 +7,30 @@
 </head>
 <body>
   <form id="config-form" class="config-form">
+    <label>Firefox Edition
+      <select id="firefoxEdition">
+        <option value="stable">Stable</option>
+        <option value="developer">Developer Edition</option>
+      </select>
+    </label><br>
+    <fieldset>
+      <legend>Developer Edition Profiles</legend>
+      <div style="margin-bottom:8px;">
+        <small>Choose which profiles launch with Developer Edition.</small>
+      </div>
+      <div id="developerProfilesList"></div>
+      <div style="margin-top:8px;">
+        <button type="button" id="refreshProfiles">Refresh Profiles</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Hidden Profiles</legend>
+      <div style="margin-bottom:8px;">
+        <small>Selected profiles are hidden from the launcher view.</small>
+      </div>
+      <div id="hiddenProfilesList"></div>
+    </fieldset>
+    <br>
     <label>Drive Letter <input id="driveLetter" type="text" /></label><br>
     <label>VHDX Path <input id="vhdxPath" type="text" /></label><br>
     <label>Volume Label <input id="volumeLabel" type="text" /></label><br>
