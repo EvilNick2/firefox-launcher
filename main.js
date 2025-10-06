@@ -27,6 +27,13 @@ let rawConfig = readInitialConfig();
 const { detectProfiles } = require(path.join(__dirname, 'src', 'utils', 'profileDetector'));
 const password = require(path.join(__dirname, 'src', 'utils', 'password'));
 
+const shouldUnmountAndExit = process.argv.some(arg => arg === '--unmount' || arg === '--unmount-only');
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+
+if (!gotSingleInstanceLock) {
+	app.quit();
+}
+
 function resolveEnv(str) {
 	return String(str).replace(/%([^%]+)%/g, (_, name) => process.env[name] || '');
 }
@@ -147,7 +154,9 @@ assign letter=${driveLetter}
 	if (match) createSymlinks(match[1].trim());
 	fs.appendFileSync(profilesIniPath, `\n\n${tempData}`);
 	fs.unlinkSync(tempIniPath);
-	mainWindow.webContents.send('refresh-profiles');
+	if (mainWindow && !mainWindow.isDestroyed()) {
+		mainWindow.webContents.send('refresh-profiles');
+	}
 }
 
 
@@ -200,7 +209,25 @@ remove letter=${driveLetter}
 select vdisk file="${vhdxPath}"
 detach vdisk
 `);
-	mainWindow.webContents.send('refresh-profiles');
+	if (mainWindow && !mainWindow.isDestroyed()) {
+		mainWindow.webContents.send('refresh-profiles');
+	}
+}
+
+if (gotSingleInstanceLock) {
+	app.on('second-instance', (_event, commandLine) => {
+		const requestedUnmount = commandLine.some(arg => arg === '--unmount' || arg === '--unmount-only');
+		if (requestedUnmount) {
+			logInfo('Processing --unmount request from existing instance');
+			unmountVhdx().catch(err => logError('Failed to unmount via secondary instance request:', err));
+			return;
+		}
+
+		if (mainWindow && !mainWindow.isDestroyed()) {
+			if (mainWindow.isMinimized()) mainWindow.restore();
+			mainWindow.focus();
+		}
+	});
 }
 
 function openConfigWindow() {
@@ -237,95 +264,108 @@ function createWindow() {
 	mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
 }
 
-app.whenReady().then(() =>{
-	createWindow();
-	app.on('activate', () =>{
-		if (BrowserWindow.getAllWindows().length === 0) createWindow();
+if (gotSingleInstanceLock) {
+	app.whenReady().then(async () =>{
+		if (shouldUnmountAndExit) {
+			try {
+				await unmountVhdx();
+				app.quit();
+			} catch (err) {
+				logError('Failed to unmount via CLI flag:', err);
+				app.exit(1);
+			}
+			return;
+		}
+
+		createWindow();
+		app.on('activate', () =>{
+			if (BrowserWindow.getAllWindows().length === 0) createWindow();
+		});
+
+		const menu = Menu.getApplicationMenu();
+
+		const fileMenu = menu.items.find(item => item.label === 'File');
+		if (fileMenu) {
+			const refreshProfilesItem = new MenuItem({
+				label: 'Refresh Profiles',
+				click: () => {
+					if (isAuthenticated) {
+					mainWindow.webContents.send('refresh-profiles');
+					}
+				}
+			});
+
+			const mountProfileItem = new MenuItem({
+				label: 'Mount Profile',
+				click: () => {
+					if (isAuthenticated) {
+						mountVhdx().catch(err => logError(err));
+					}
+				}
+			});
+
+			const unmountProfileItem = new MenuItem({
+				label: 'Unmount Profile',
+				click: () => {
+					if (isAuthenticated) {
+						unmountVhdx().catch(err => logError(err));
+					}
+				}
+			});
+
+			const deletePasswordItem = new MenuItem({
+				label: 'Delete Password',
+				click: () => {
+					if (isAuthenticated) {
+						password.delete();
+						mainWindow.webContents.send('password-deleted');
+					}
+				}
+			});
+
+			const settingsItem = new MenuItem({
+				label: 'Settings',
+				click: () => {
+					if (isAuthenticated) {
+						openConfigWindow();
+					}
+				}
+			})
+
+			const exitMenuItemIndex = fileMenu.submenu.items.findIndex(item => item.label === 'Exit');
+			fileMenu.submenu.insert(exitMenuItemIndex, deletePasswordItem);
+			fileMenu.submenu.insert(exitMenuItemIndex, unmountProfileItem);
+			fileMenu.submenu.insert(exitMenuItemIndex, mountProfileItem);
+			fileMenu.submenu.insert(exitMenuItemIndex, refreshProfilesItem);
+			fileMenu.submenu.insert(exitMenuItemIndex, settingsItem);
+		}
+
+		const helpMenuIndex = menu.items.findIndex(item => item.label === 'Help');
+		if (helpMenuIndex !== -1) {
+			menu.items[helpMenuIndex].submenu.clear();
+			menu.items[helpMenuIndex].submenu.append(new MenuItem({
+				label: 'Documentation',
+				click: () => {
+					shell.openExternal('https://github.com/EvilNick2/firefox-launcher');
+				}
+			}));
+			menu.items[helpMenuIndex].submenu.append(new MenuItem({
+				label: 'Issues',
+				click: () => {
+					shell.openExternal('https://github.com/EvilNick2/firefox-launcher/issues');
+				}
+			}));
+			menu.items[helpMenuIndex].submenu.append(new MenuItem({
+				label: 'Author',
+				click: () => {
+					shell.openExternal('https://github.com/EvilNick2');
+				}
+			}));
+		}
+
+		Menu.setApplicationMenu(menu);
 	});
-
-  const menu = Menu.getApplicationMenu();
-
-  const fileMenu = menu.items.find(item => item.label === 'File');
-  if (fileMenu) {
-    const refreshProfilesItem = new MenuItem({
-      label: 'Refresh Profiles',
-      click: () => {
-				if (isAuthenticated) {
-        mainWindow.webContents.send('refresh-profiles');
-				}
-      }
-    });
-
-		const mountProfileItem = new MenuItem({
-			label: 'Mount Profile',
-			click: () => {
-				if (isAuthenticated) {
-					mountVhdx().catch(err => logError(err));
-				}
-			}
-		});
-
-		const unmountProfileItem = new MenuItem({
-			label: 'Unmount Profile',
-			click: () => {
-				if (isAuthenticated) {
-					unmountVhdx().catch(err => logError(err));
-				}
-			}
-		});
-
-		const deletePasswordItem = new MenuItem({
-			label: 'Delete Password',
-			click: () => {
-				if (isAuthenticated) {
-					password.delete();
-					mainWindow.webContents.send('password-deleted');
-				}
-			}
-		});
-
-		const settingsItem = new MenuItem({
-			label: 'Settings',
-			click: () => {
-				if (isAuthenticated) {
-					openConfigWindow();
-				}
-			}
-		})
-
-    const exitMenuItemIndex = fileMenu.submenu.items.findIndex(item => item.label === 'Exit');
-		fileMenu.submenu.insert(exitMenuItemIndex, deletePasswordItem);
-		fileMenu.submenu.insert(exitMenuItemIndex, unmountProfileItem);
-		fileMenu.submenu.insert(exitMenuItemIndex, mountProfileItem);
-    fileMenu.submenu.insert(exitMenuItemIndex, refreshProfilesItem);
-    fileMenu.submenu.insert(exitMenuItemIndex, settingsItem);
-  }
-
-	const helpMenuIndex = menu.items.findIndex(item => item.label === 'Help');
-	if (helpMenuIndex !== -1) {
-		menu.items[helpMenuIndex].submenu.clear();
-		menu.items[helpMenuIndex].submenu.append(new MenuItem({
-			label: 'Documentation',
-			click: () => {
-				shell.openExternal('https://github.com/EvilNick2/firefox-launcher');
-			}
-		}));
-		menu.items[helpMenuIndex].submenu.append(new MenuItem({
-			label: 'Issues',
-			click: () => {
-				shell.openExternal('https://github.com/EvilNick2/firefox-launcher/issues');
-			}
-		}));
-		menu.items[helpMenuIndex].submenu.append(new MenuItem({
-			label: 'Author',
-			click: () => {
-				shell.openExternal('https://github.com/EvilNick2');
-			}
-		}));
-	}
-
-  Menu.setApplicationMenu(menu);
-});
+}
 
 ipcMain.handle('list-profiles', (_event, pathOverride) => {
 	try {
